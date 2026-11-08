@@ -1,3 +1,11 @@
+Built using Node.js, TypeScript, and Tailwind CSS, the application integrates Capital One's Nessie API to provide simulated banking data, including customer accounts, balances, and transactions.
+
+The platform features two AI agents: one responsible for monitoring security activity, identifying suspicious behavior, and generating security insights, and another that simulates unauthorized attempts to access protected banking information. Through integrated access controls and security monitoring, the application detects and blocks unauthorized requests while maintaining an audit trail of attempted access.
+
+The project demonstrates the intersection of artificial intelligence, financial technology, and cybersecurity, highlighting the importance of protecting sensitive information as AI agents become increasingly integrated into digital platforms.
+
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+
 This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
 
 ## Getting Started
