@@ -15,7 +15,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "TailBank",
+  title: "veyl",
   description: "Banking application with security monitoring dashboard",
 };
 
