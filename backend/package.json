@@ -11,6 +11,8 @@
     "reset": "node --env-file-if-exists=.env scripts/database.ts reset",
     "demo": "node --env-file-if-exists=.env scripts/demo.ts",
     "docs:examples": "node scripts/examples.ts",
+    "nessie:smoke": "node --env-file-if-exists=.env scripts/nessie-smoke.ts",
+    "nessie:seed": "node --env-file-if-exists=.env scripts/nessie-seed.ts",
     "test": "node --test tests/*.test.ts",
     "typecheck": "tsc --noEmit"
   },

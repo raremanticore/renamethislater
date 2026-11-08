@@ -10,6 +10,9 @@ import type { Action, Authorization, DemoSessionResponse, ErrorResponse, Protect
 import { SecurityEngine } from './security.ts';
 import { eventPage, overview, sessionDetail } from './dashboard.ts';
 import { explain } from './explanations.ts';
+import { NessieBankingRepository, NessieError } from './nessie.ts';
+import { ANALYST_MAX_EVENTS, SecurityAnalyst } from './analyst.ts';
+import type { AnalysisResponse } from './contracts.ts';
 
 class HttpError extends Error {
   status: number; code: string;
@@ -43,11 +46,14 @@ function pagination(url: URL) {
     throw new HttpError(400, 'invalid_cursor', 'Invalid event cursor');
   return { limit: Number(rawLimit), before: cursor ? Number(cursor) : Number.MAX_SAFE_INTEGER };
 }
-export function createApplication(config: Config, dependencies: { store?: Store; bank?: BankingRepository; now?: () => number } = {}) {
+export function createApplication(config: Config, dependencies: { store?: Store; bank?: BankingRepository; now?: () => number; analystFetch?: typeof fetch; nessieFetch?: typeof fetch } = {}) {
   if (!config.demoMode) throw new Error('Set DEMO_MODE=true to explicitly enable development-only sessions');
   const store = dependencies.store ?? new Store(config.databasePath);
   store.seed();
-  const bank = dependencies.bank ?? new LocalBankingRepository(store);
+  const bank = dependencies.bank ?? (config.bankingProvider === 'nessie'
+    ? new NessieBankingRepository(config, dependencies.nessieFetch) : new LocalBankingRepository(store));
+  const bankingSource = bank.source ?? config.bankingProvider;
+  const analyst = new SecurityAnalyst(config, dependencies.analystFetch);
   const engine = new SecurityEngine(store, config);
   const clock = dependencies.now ?? Date.now;
   const server = createServer(async (req, res) => {
@@ -69,7 +75,7 @@ export function createApplication(config: Config, dependencies: { store?: Store;
         if ((req.headers.origin && req.headers.origin !== config.origin) || req.headers['sec-fetch-site'] === 'cross-site')
           throw new HttpError(403, 'origin_denied', 'Use the configured application origin');
       }
-      if (path === '/api/health' && req.method === 'GET') return json(res, 200, { status: 'ok', developmentOnly: true });
+      if (path === '/api/health' && req.method === 'GET') return json(res, 200, { status: 'ok', developmentOnly: true, bankingSource });
       if (path === '/api/demo/session' && req.method === 'POST') {
         const data = await body(req);
         if (data.handle !== 'alice' && data.handle !== 'bob' && data.handle !== 'admin')
@@ -81,13 +87,34 @@ export function createApplication(config: Config, dependencies: { store?: Store;
         const response: DemoSessionResponse = { developmentOnly: true, sessionId: result.session.id,
           expiresAt: new Date(result.session.expiresAt).toISOString(),
           user: { handle: result.session.handle, role: result.session.role },
-          accountIds: store.db.prepare('SELECT id FROM accounts WHERE user_id=? ORDER BY id').all(result.session.userId).map(row => String(row.id)),
+          accountIds: bank.accountIds ? await bank.accountIds(result.session.userId)
+            : store.db.prepare('SELECT id FROM accounts WHERE user_id=? ORDER BY id').all(result.session.userId).map(row => String(row.id)),
+          bankingSource,
         };
         return json(res, 201, response);
       }
       if (path.startsWith('/api/security/')) {
         if (!session) return fail(401, 'authentication_required', 'A valid server session is required');
         if (session.role !== 'admin') return fail(403, 'admin_required', 'Demo administrator access required');
+        const analysisRoute = /^\/api\/security\/sessions\/([a-f0-9-]{36})\/analysis$/.exec(path);
+        if (analysisRoute && req.method === 'POST') {
+          await body(req); // No client events/prompts are accepted; enforce the normal JSON/body cap.
+          const id = analysisRoute[1]!;
+          const detail = sessionDetail(store, engine, id, now, 1, Number.MAX_SAFE_INTEGER);
+          if (!detail) return fail(404, 'session_not_found', 'Session not found');
+          const events = store.events(ANALYST_MAX_EVENTS, Number.MAX_SAFE_INTEGER, id).map(row => row.event)
+            .filter(event => Date.parse(event.timestamp) > now - config.windowMs && Date.parse(event.timestamp) <= now);
+          // Snapshot enforcement before awaiting advice; model output never enters the engine.
+          const response: AnalysisResponse = { apiVersion: '1', sessionId: id, generatedAt: new Date(now).toISOString(),
+            sample: { eventCount: events.length, maxEvents: ANALYST_MAX_EVENTS, windowMs: config.windowMs,
+              firstEventAt: events.at(-1)?.timestamp ?? null, lastEventAt: events[0]?.timestamp ?? null },
+            enforcement: { currentDecision: detail.session.decision, currentRiskScore: detail.session.riskScore, protection: engine.status(),
+              blockedRequests: events.filter(event => event.decision === 'block').map(event => ({ requestId: event.requestId,
+                triggeredRules: event.triggeredRules, reasons: event.reasons, riskScore: event.riskScore, basis: event.enforcement ?? null })) },
+            analysis: await analyst.review(events),
+          };
+          return json(res, 200, response);
+        }
         if (req.method === 'GET' && path === '/api/security/overview') return json(res, 200, overview(store, engine, now));
         if (req.method === 'GET' && path === '/api/security/events') {
           const { limit, before } = pagination(url);
@@ -119,6 +146,7 @@ export function createApplication(config: Config, dependencies: { store?: Store;
       const accountRoute = /^\/api\/bank\/accounts\/([^/]+)(?:\/(transactions|export))?$/.exec(path);
       const decoy = path === '/api/bank/decoy/export';
       if (accountRoute || decoy) {
+        res.setHeader('X-Banking-Source', bankingSource);
         const id = accountRoute?.[1] ?? '';
         const suffix = accountRoute?.[2];
         const action: Action = decoy ? 'decoy.export' : suffix === 'export' ? 'account.export' : suffix === 'transactions' ? 'transactions.read' : 'account.read';
@@ -150,6 +178,10 @@ export function createApplication(config: Config, dependencies: { store?: Store;
       }
       return fail(404, 'route_not_found', 'Route not found');
     } catch (error) {
+      if (error instanceof NessieError && !res.headersSent) {
+        if (error.retryAfter) res.setHeader('Retry-After', String(error.retryAfter));
+        return fail(error.status, error.code, error.message);
+      }
       if (error instanceof HttpError) return fail(error.status, error.code, error.message);
       // Do not serialize exception messages: upstream adapters could include secrets/payloads.
       if (!res.headersSent) return fail(500, 'internal_error', 'Request failed');

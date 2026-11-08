@@ -34,7 +34,9 @@ async function expect(path: string, cookie: string, status: number) {
 console.log('SCRIPTED AUTOMATION ONLY; own local demo; at most 30 requests / 20 seconds; no real AI-agent testing.');
 const health = await request('/api/health');
 assert.equal(health.status, 200);
-assert.equal((await health.json() as { developmentOnly?: boolean }).developmentOnly, true);
+const status = await health.json() as { developmentOnly?: boolean; bankingSource?: string };
+assert.equal(status.developmentOnly, true);
+assert.equal(status.bankingSource, 'local', 'Repeated automation is restricted to local fixtures; use nessie:smoke for one bounded sandbox check');
 const account = '/api/bank/accounts/acc-alice-checking';
 const normal = await login('alice');
 await expect(account, normal, 200);

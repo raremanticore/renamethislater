@@ -1,15 +1,21 @@
 import type { Account, Transaction } from './contracts.ts';
 import type { Store } from './database.ts';
 
-/** Replace this interface's implementation with Nessie later. Ownership is a separate gate. */
+/** Ownership must use trusted server state without fetching protected upstream data. */
 export interface BankingRepository {
+  readonly source?: 'local' | 'nessie';
+  accountIds?(userId: string): string[] | Promise<string[]>;
   ownsAccount(userId: string, accountId: string): boolean | Promise<boolean>;
   account(id: string): Account | Promise<Account>;
   transactions(id: string): Transaction[] | Promise<Transaction[]>;
 }
 export class LocalBankingRepository implements BankingRepository {
+  readonly source = 'local';
   store: Store;
   constructor(store: Store) { this.store = store; }
+  accountIds(userId: string): string[] {
+    return this.store.db.prepare('SELECT id FROM accounts WHERE user_id=? ORDER BY id').all(userId).map(row => String(row.id));
+  }
   ownsAccount(userId: string, accountId: string) {
     return !!this.store.db.prepare('SELECT 1 FROM accounts WHERE id=? AND user_id=?').get(accountId, userId);
   }

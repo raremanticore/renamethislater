@@ -1,6 +1,6 @@
 import type { Config } from './config.ts';
 import type { Store } from './database.ts';
-import type { Action, Authorization, Decision, ProtectionStatus, RuleHit, SecurityEvent } from './contracts.ts';
+import type { Action, Authorization, Decision, EnforcementBasis, ProtectionStatus, RuleHit, SecurityEvent } from './contracts.ts';
 import { rules } from './rules.ts';
 
 export interface Assessment { riskScore: number; triggeredRules: RuleHit[]; decision: Decision; retryAfter: number; reasons: string[] }
@@ -37,9 +37,17 @@ export class SecurityEngine {
         result.decision = 'deny';
         result.reasons = [input.authorization === 'unauthenticated' ? 'A valid server session is required' : 'Account ownership denied', ...result.reasons];
       }
+      const scoreDriven = result.decision === 'block' || (result.decision === 'throttle' && result.riskScore >= this.config.throttleScore);
+      const enforcement: EnforcementBasis = {
+        cause: result.decision === 'deny' ? 'authorization' : !this.store.protectionEnabled ? 'protection_disabled'
+          : scoreDriven ? 'score_threshold' : result.decision === 'throttle' ? 'request_frequency' : 'none',
+        threshold: result.decision === 'block' ? this.config.blockScore : scoreDriven ? this.config.throttleScore : null,
+        contributingRuleIds: scoreDriven ? result.triggeredRules.filter(rule => rule.score > 0).map(rule => rule.id)
+          : result.decision === 'throttle' ? ['request_frequency'] : [],
+      };
       const event: SecurityEvent = { ...input, timestamp: new Date(now).toISOString(),
         decision: result.decision, riskScore: result.riskScore, triggeredRules: result.triggeredRules,
-        reasons: result.reasons, protectionEnabled: this.store.protectionEnabled };
+        reasons: result.reasons, protectionEnabled: this.store.protectionEnabled, enforcement };
       this.store.record(event);
       return result;
     });

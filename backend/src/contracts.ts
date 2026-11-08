@@ -4,6 +4,10 @@ export type Authorization = 'allowed' | 'denied' | 'unauthenticated';
 export type Action = 'account.read' | 'transactions.read' | 'account.export' | 'decoy.export';
 export type RuleId = 'request_frequency' | 'unauthorized_resources' | 'repeated_exports' | 'decoy_access';
 export interface RuleHit { id: RuleId; count: number; score: number; reason: string }
+export interface EnforcementBasis {
+  cause: 'authorization' | 'score_threshold' | 'request_frequency' | 'none' | 'protection_disabled';
+  threshold: number | null; contributingRuleIds: RuleId[];
+}
 export interface SecurityEvent {
   requestId: string;
   sessionId: string | null;
@@ -17,6 +21,8 @@ export interface SecurityEvent {
   riskScore: number;
   reasons: string[];
   protectionEnabled: boolean;
+  /** Added in v1; historical events may lack the recorded enforcement basis. */
+  enforcement?: EnforcementBasis;
 }
 export interface ProtectionStatus {
   enabled: boolean;
@@ -43,6 +49,24 @@ export interface EventsResponse {
   pagination: { limit: number; nextCursor: string | null; hasMore: boolean };
 }
 export interface Explanation { source: 'deterministic' | 'model'; text: string }
+export type AnalystAssessment = 'normal' | 'suspicious' | 'uncertain';
+export interface AnalystResult {
+  source: 'deterministic' | 'model'; assessment: AnalystAssessment; explanation: string;
+  /** Server-generated request IDs identify the existing events used as evidence. */
+  supportingRequestIds: string[];
+  advisoryOnly: true;
+  fallbackReason?: 'not_configured' | 'no_events' | 'provider_failed' | 'invalid_response' | 'busy';
+}
+export interface AnalysisResponse {
+  apiVersion: '1'; sessionId: string; generatedAt: string;
+  sample: { eventCount: number; maxEvents: number; windowMs: number; firstEventAt: string | null; lastEventAt: string | null };
+  analysis: AnalystResult;
+  /** Recorded enforcement facts, supplied by the server, never inferred by the model. */
+  enforcement: {
+    currentDecision: Decision; currentRiskScore: number; protection: ProtectionStatus;
+    blockedRequests: { requestId: string; triggeredRules: RuleHit[]; reasons: string[]; riskScore: number; basis: EnforcementBasis | null }[];
+  };
+}
 export interface SessionResponse {
   apiVersion: '1'; session: SessionSummary; protection: ProtectionStatus;
   timeline: SecurityEvent[];
@@ -56,6 +80,7 @@ export interface DemoSessionResponse {
   developmentOnly: true; sessionId: string; expiresAt: string;
   user: { handle: string; role: 'customer' | 'admin' };
   accountIds: string[];
+  bankingSource?: 'local' | 'nessie';
 }
 export interface Account { id: string; name: string; currency: string; balanceCents: number }
 export interface Transaction {
