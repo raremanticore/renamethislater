@@ -5,6 +5,7 @@
  */
 
 import SecurityStats from "./SecurityStats";
+import LiveActivityTable from "./LiveActivityTable";
 
 export default function SecurityDashboard() {
   return (
@@ -12,6 +13,7 @@ export default function SecurityDashboard() {
       <h1>Security Dashboard</h1>
 
       <SecurityStats />
+      <LiveActivityTable />
     </div>
   );
 }
