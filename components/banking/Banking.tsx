@@ -90,9 +90,9 @@ export default function BankingDashboard() {
                 {/* Logo and Brand Name */}
             <Link href="/" className="flex items-center gap-3">
 
-              <div className="bg-white rounded-full p-2 flex items-center justify-center">
-              <Image
-                src="/ghost.svg"
+              <div>
+              <Image className="self-auto"
+                src="/ghostone.svg"
                 alt="Ghost Logo"
                 width={40}
                 height={40}
