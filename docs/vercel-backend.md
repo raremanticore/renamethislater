@@ -67,6 +67,8 @@ After pushing the reviewed code, redeploy this project. Open its **production** 
 
 Health requires database connectivity. A 503 `backend_unavailable` means initialization/configuration, missing migration/seed, TLS, or connectivity failed. A later database failure fails closed with the existing sanitized 500 `internal_error` and no banking retrieval. No driver messages, passwords, or connection strings are returned or logged. A health response does not test Nessie credentials/provider availability.
 
+For startup 503s, Vercel **Logs** contains a JSON event named `backend_startup_failed`, correlated by the response's request ID. It includes only an allowlisted `reason` and `stage`, never raw exceptions or environment values. Common reasons: `hosted_demo_disabled`/`demo_mode_disabled` (set flags to the literal value `true` without quotes), `database_url_missing`, `app_origin_invalid` (exact frontend HTTPS origin, no trailing slash), `admin_key_missing_or_short`, `nessie_account_map_invalid` (raw JSON, no surrounding single quotes), `database_authentication_failed` (pooler username/password), `database_certificate_missing`/`database_tls_failed` (certificate packaging/trust), `database_schema_missing`/`database_seed_missing` (run db:setup), and `database_connection_failed`. Apply environment variables to the backend project's Production environment and redeploy after changes.
+
 ## 3. Frontend Vercel project
 
 Keep root `./`, Next.js preset, `npm ci`, `npm run build`, and default output directory. Set:

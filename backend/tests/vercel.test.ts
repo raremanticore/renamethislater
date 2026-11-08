@@ -11,6 +11,8 @@ import { basename, dirname, join } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 
 test('Vercel function fails closed with sanitized 503 when hosted configuration is missing', async t => {
+  const logs: string[] = [];
+  t.mock.method(console, 'error', (message: string) => { logs.push(message); });
   // The runner isolates this file. Do not load a local .env or make any database/provider calls.
   const original = process.env.HOSTED_DEMO_MODE;
   process.env.HOSTED_DEMO_MODE = 'false';
@@ -28,6 +30,9 @@ test('Vercel function fails closed with sanitized 503 when hosted configuration 
     assert.equal(body.error.code, 'backend_unavailable');
     assert.equal(body.error.requestId, response.headers.get('x-request-id'));
     assert.ok(!JSON.stringify(body).includes('postgresql://'));
+    const diagnostic = JSON.parse(logs.at(-1)!);
+    assert.deepEqual(diagnostic, { event: 'backend_startup_failed', requestId: body.error.requestId,
+      reason: 'hosted_demo_disabled', stage: 'configuration' });
   }
 });
 
