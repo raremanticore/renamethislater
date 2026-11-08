@@ -6,31 +6,34 @@
  * values will be filled in with capital one nessie api mock data
  */
 
-<div className="security-cards">
-  <div className="column-one">
-    <div className="card-one">
-      <h2> Header here </h2>
-      <p> Description here </p>
-    </div>
-  </div>
-  <div className="column-two">
-    <div className="card-two">
-      <h2> Header here </h2>
-      <p> Description here </p>
-    </div>
-  </div>
-  <div className="column-three">
-    <div className="card-three">
-      <h2> Header here </h2>
-      <p> Description here </p>
-    </div>
-  </div>
-</div>
 
 export default function SecurityStats() {
   return (
-    <div>
-      {/* Your cards go here */}
+    <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+      <div className="bg-slate-900 border border-slate-800 rounded-xl p-6 shadow-lg">
+        <div className="column-one">
+          <div className="card-one">
+            <h2 className="text-sm font-medium text-slate-400">Active Sessions</h2>
+            <p className="text-3xl font-bold text-white mt-3">24</p>
+          </div>
+        </div>
+      </div>
+      <div className="bg-slate-900 border border-slate-800 rounded-xl p-6 shadow-lg">
+        <div className="column-two">
+          <div className="card-two">
+            <h2 className="text-sm font-medium text-slate-400">Flagged Sessions</h2>
+            <p className="text-3xl font-bold text-white mt-3">5</p>
+          </div>
+        </div>
+      </div>
+      <div className="bg-slate-900 border border-slate-800 rounded-xl p-6 shadow-lg">
+        <div className="column-three">
+          <div className="card-three">
+            <h2 className="text-sm font-medium text-slate-400">Blocked Requests</h2>
+            <p className="text-3xl font-bold text-white mt-3">12</p>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }
