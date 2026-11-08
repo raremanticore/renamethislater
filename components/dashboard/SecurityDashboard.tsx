@@ -6,6 +6,7 @@
 
 import SecurityStats from "./SecurityStats";
 import LiveActivityTable from "./LiveActivityTable";
+import SessionDetails from "./SessionDetails"
 
 export default function SecurityDashboard() {
   return (
@@ -14,6 +15,7 @@ export default function SecurityDashboard() {
 
       <SecurityStats />
       <LiveActivityTable />
+      <SessionDetails/>
     </div>
   );
 }

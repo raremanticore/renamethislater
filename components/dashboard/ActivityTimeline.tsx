@@ -4,8 +4,9 @@
  * event timestamps, previous session activities
  * part of sessiondetails
  */
-
-<div> 
+export default function ActivityTimeline() {
+     return (
+     <div> 
     <ol className="relative">
     <li className="relative flex gap-4 pb-8 last:pb-0">
 
@@ -26,3 +27,5 @@
     </li>
     </ol>
 </div> 
+ );
+}
