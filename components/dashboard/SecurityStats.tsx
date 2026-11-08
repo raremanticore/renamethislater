@@ -26,3 +26,11 @@
     </div>
   </div>
 </div>
+
+export default function SecurityStats() {
+  return (
+    <div>
+      {/* Your cards go here */}
+    </div>
+  );
+}
