@@ -1,5 +1,5 @@
 import type { Account, Transaction } from './contracts.ts';
-import type { Store } from './database.ts';
+import type { StateStore } from './storage.ts';
 
 /** Ownership must use trusted server state without fetching protected upstream data. */
 export interface BankingRepository {
@@ -11,19 +11,19 @@ export interface BankingRepository {
 }
 export class LocalBankingRepository implements BankingRepository {
   readonly source = 'local';
-  store: Store;
-  constructor(store: Store) { this.store = store; }
-  accountIds(userId: string): string[] {
-    return this.store.db.prepare('SELECT id FROM accounts WHERE user_id=? ORDER BY id').all(userId).map(row => String(row.id));
+  store: StateStore;
+  constructor(store: StateStore) { this.store = store; }
+  accountIds(userId: string) {
+    return this.store.accountIds(userId);
   }
   ownsAccount(userId: string, accountId: string) {
-    return !!this.store.db.prepare('SELECT 1 FROM accounts WHERE id=? AND user_id=?').get(accountId, userId);
+    return this.store.ownsAccount(userId, accountId);
   }
-  account(id: string): Account {
-    return this.store.db.prepare('SELECT id,name,currency,balance_cents AS balanceCents FROM accounts WHERE id=?').get(id) as unknown as Account;
+  account(id: string) {
+    return this.store.account(id);
   }
-  transactions(id: string): Transaction[] {
-    return this.store.db.prepare('SELECT id,account_id AS accountId,posted_at AS postedAt,description,amount_cents AS amountCents FROM transactions WHERE account_id=? ORDER BY posted_at,id').all(id) as unknown as Transaction[];
+  transactions(id: string) {
+    return this.store.transactions(id);
   }
 }
 export function csv(rows: Transaction[]): string {

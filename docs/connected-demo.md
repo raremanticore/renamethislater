@@ -1,6 +1,6 @@
 # Connected banking and security demo
 
-The frontend from `origin/main` was merged into the isolated `test` branch. Its slate/violet design, navigation, card layout, and typography are preserved. The banking page and security dashboard now use the existing backend contract through a same-origin API proxy. No merge into `main`, remote push, PR, or deployment is included.
+The frontend and backend are connected through the existing same-origin API proxy. The current two-project Vercel/Postgres setup is documented in [vercel-backend.md](vercel-backend.md). Local development commands below remain supported. Frontend design and API response formats are preserved.
 
 ## Start both apps
 

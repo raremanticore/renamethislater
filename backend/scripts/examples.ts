@@ -64,7 +64,10 @@ try {
   const reset = await (await request('/api/security/demo/reset', admin, {})).json();
   // Stable illustrative UUIDs make example regeneration reviewable; actual IDs remain opaque.
   const ids = new Map<string, string>();
-  const serialized = JSON.stringify({ demoSession, bankAccount, bankTransactions, bankExportCsv, blockedError, securityOverview, securityEvents, securitySession,
+  const backendUnavailable = { error: { code: 'backend_unavailable',
+    message: 'Backend configuration or database unavailable; check environment and database setup',
+    requestId: '00000000-0000-4000-8000-000000000000' } };
+  const serialized = JSON.stringify({ backendUnavailable, demoSession, bankAccount, bankTransactions, bankExportCsv, blockedError, securityOverview, securityEvents, securitySession,
     securityAnalysis, mockedModelAnalysis, mockedNessieExample, exampleMetadata: { modelAnalysisWasMocked: true, bankingSource: 'local', realProviderCalls: 0 }, protectionOff, reset }, null, 2)
     .replace(/[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}/g, value => {
       if (!ids.has(value)) ids.set(value, `${String(ids.size + 1).padStart(8, '0')}-0000-4000-8000-000000000000`);

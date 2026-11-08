@@ -1,4 +1,6 @@
 /** Dashboard API v1. Add fields compatibly; never reinterpret existing fields. */
+/** This marker stays true for the explicitly hosted fictional demo as well. */
+export interface HealthResponse { status: 'ok'; developmentOnly: true; bankingSource: 'local' | 'nessie' }
 export type Decision = 'allow' | 'deny' | 'throttle' | 'block';
 export type Authorization = 'allowed' | 'denied' | 'unauthenticated';
 export type Action = 'account.read' | 'transactions.read' | 'account.export' | 'decoy.export';

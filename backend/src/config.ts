@@ -1,5 +1,5 @@
 export interface Config {
-  demoMode: boolean; host: string; port: number; origin: string; databasePath: string;
+  demoMode: boolean; hostedDemo: boolean; host: string; port: number; origin: string; databasePath: string;
   adminKey: string; sessionTtlMs: number; windowMs: number; burstWindowMs: number;
   burstLimit: number; throttleScore: number; blockScore: number;
   unauthorizedWeight: number; exportWeight: number; decoyWeight: number;
@@ -35,10 +35,15 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): Config {
     if (!Number.isSafeInteger(value) || value <= 0) throw new Error(`Invalid ${key}`);
     return value;
   };
-  if (env.NODE_ENV === 'production') throw new Error('This demo backend is development-only.');
+  const hostedDemo = env.HOSTED_DEMO_MODE === 'true';
+  if (env.NODE_ENV === 'production' && !hostedDemo) throw new Error('This demo backend is development-only unless HOSTED_DEMO_MODE=true.');
+  if ((env.NODE_ENV === 'production' || env.VERCEL === '1' || hostedDemo) && !env.DATABASE_URL?.trim())
+    throw new Error('Hosted demo requires server-only DATABASE_URL; SQLite is local-only');
   const port = number('PORT', 3001);
   const origin = env.APP_ORIGIN ?? `http://127.0.0.1:${port}`;
   if (new URL(origin).origin !== origin) throw new Error('APP_ORIGIN must be an exact origin');
+  if (hostedDemo && (!env.APP_ORIGIN || !origin.startsWith('https://') || env.DEMO_MODE !== 'true' || (env.DEMO_ADMIN_KEY?.length ?? 0) < 24))
+    throw new Error('Hosted demo requires DEMO_MODE=true, HTTPS APP_ORIGIN, and DEMO_ADMIN_KEY (24+ characters)');
   const provider = env.BANKING_PROVIDER ?? 'local';
   if (provider !== 'local' && provider !== 'nessie') throw new Error('BANKING_PROVIDER must be local or nessie');
   let nessieBase: URL;
@@ -50,7 +55,7 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): Config {
   if (provider === 'nessie' && (!env.NESSIE_API_KEY?.trim() || !Object.values(nessieAccounts).some(accounts => Object.keys(accounts).length)))
     throw new Error('Nessie mode requires NESSIE_API_KEY and a nonempty trusted NESSIE_ACCOUNT_MAP');
   const config: Config = {
-    demoMode: env.DEMO_MODE === 'true', host: env.HOST ?? '127.0.0.1', port, origin,
+    demoMode: env.DEMO_MODE === 'true', hostedDemo, host: env.HOST ?? '127.0.0.1', port, origin,
     databasePath: env.DATABASE_PATH ?? './data/demo.sqlite', adminKey: env.DEMO_ADMIN_KEY ?? '',
     sessionTtlMs: 8 * 60 * 60 * 1000,
     windowMs: number('SECURITY_WINDOW_MS', 300_000),

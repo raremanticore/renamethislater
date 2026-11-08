@@ -61,7 +61,7 @@ test('normal account browsing, transactions, and one CSV export remain allowed',
     } else await response.json();
     app.advance(10_000);
   }
-  assert.equal(app.engine.assess(alice.body.sessionId, app.time()).riskScore, 0);
+  assert.equal((await app.engine.assess(alice.body.sessionId, app.time())).riskScore, 0);
   assert.deepEqual(app.calls, { account: 1, transactions: 2 });
 });
 
@@ -100,7 +100,7 @@ test('slower unauthorized requests accumulate risk, then block authorized payloa
     assert.equal((await app.request('/api/bank/accounts/not-owned-' + i, alice.cookie)).status, 403);
     app.advance(15_000);
   }
-  const score = app.engine.assess(alice.body.sessionId, app.time());
+  const score = await app.engine.assess(alice.body.sessionId, app.time());
   assert.equal(score.riskScore, 100);
   assert.equal(score.decision, 'block');
   assert.ok(!score.triggeredRules.some(rule => rule.id === 'request_frequency'));
@@ -124,7 +124,7 @@ test('repeated slow exports throttle and block; a decoy produces risk without fe
   assert.equal((await app.request('/api/bank/decoy/export', bob.cookie)).status, 429);
   app.advance(10_000);
   assert.equal((await app.request('/api/bank/decoy/export', bob.cookie)).status, 403);
-  assert.equal(app.engine.assess(bob.body.sessionId, app.time()).riskScore, 140);
+  assert.equal((await app.engine.assess(bob.body.sessionId, app.time())).riskScore, 140);
   assert.equal(app.calls.transactions, 3);
 });
 
@@ -134,7 +134,7 @@ test('risk expires, expired signals are deleted, and administrator reset restore
   const admin = await app.login('admin');
   await app.request('/api/bank/decoy/export', alice.cookie);
   app.advance(300_000);
-  assert.equal(app.engine.assess(alice.body.sessionId, app.time()).riskScore, 0);
+  assert.equal((await app.engine.assess(alice.body.sessionId, app.time())).riskScore, 0);
   assert.equal((await app.request(account, alice.cookie)).status, 200);
   assert.equal(app.store.db.prepare('SELECT COUNT(*) AS n FROM signals').get()!.n, 1);
   await app.request('/api/bank/decoy/export', alice.cookie);
@@ -213,7 +213,7 @@ test('session risk is isolated, session expiry denies access, and mutations reje
   assert.equal((await app.request(account, alice.cookie)).status, 401);
 });
 
-test('SQLite persists protection, sessions, audit records, and signals across restarts; seed is idempotent', () => {
+test('SQLite persists protection, sessions, audit records, and signals across restarts; seed is idempotent', async () => {
   const dir = mkdtempSync(join(tmpdir(), 'bank-detect-test-'));
   const path = join(dir, 'test.sqlite');
   let store = new Store(path);
@@ -221,18 +221,18 @@ test('SQLite persists protection, sessions, audit records, and signals across re
     store.seed(); store.seed();
     assert.equal(store.db.prepare('SELECT COUNT(*) AS n FROM transactions').get()!.n, 9);
     const now = Date.now();
-    const login = createSession(store, 'alice', now, config())!;
+    const login = (await createSession(store, 'alice', now, config()))!;
     const engine = new SecurityEngine(store, config());
-    engine.inspect({ requestId: 'test-request', sessionId: 'session', action: 'decoy.export', targetResource: '/api/bank/decoy/export', authorization: 'allowed' }, now);
+    await engine.inspect({ requestId: 'test-request', sessionId: 'session', action: 'decoy.export', targetResource: '/api/bank/decoy/export', authorization: 'allowed' }, now);
     store.protectionEnabled = false;
     store.close(); store = new Store(path);
-    assert.equal(readSession(store, login.cookie, now)?.id, login.session.id);
+    assert.equal((await readSession(store, login.cookie, now))?.id, login.session.id);
     assert.equal(store.protectionEnabled, false);
     store.protectionEnabled = true;
-    assert.equal(new SecurityEngine(store, config()).assess('session', now).riskScore, 70);
+    assert.equal((await new SecurityEngine(store, config()).assess('session', now)).riskScore, 70);
     assert.equal(store.events(10, Number.MAX_SAFE_INTEGER).length, 1);
     store.resetAll();
-    assert.equal(readSession(store, login.cookie, now), undefined);
+    assert.equal(await readSession(store, login.cookie, now), undefined);
     assert.equal(store.protectionEnabled, true);
     assert.equal(store.signals('session', 0).length, 0);
   } finally { store.close(); rmSync(dir, { recursive: true, force: true }); }
@@ -257,11 +257,11 @@ test('protection-off skips behavioral state but preserves audit and existing une
   await app.request('/api/bank/decoy/export', alice.cookie);
   await app.request('/api/security/demo/protection', admin.cookie, { enabled: false });
   for (let i = 0; i < 10; i++) assert.equal((await app.request(account + '/export', alice.cookie)).status, 200);
-  assert.equal(app.engine.assess(alice.body.sessionId, app.time()).riskScore, 0);
+  assert.equal((await app.engine.assess(alice.body.sessionId, app.time())).riskScore, 0);
   assert.equal(app.store.signals(alice.body.sessionId, 0).length, 1);
   assert.equal(app.store.events(100, Number.MAX_SAFE_INTEGER).filter(row => !row.event.protectionEnabled).length, 10);
   await app.request('/api/security/demo/protection', admin.cookie, { enabled: true });
-  assert.equal(app.engine.assess(alice.body.sessionId, app.time()).riskScore, 70);
+  assert.equal((await app.engine.assess(alice.body.sessionId, app.time())).riskScore, 70);
 });
 
 test('demo startup and configuration fail closed outside explicit development mode', () => {

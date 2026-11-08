@@ -5,5 +5,5 @@
     "allowImportingTsExtensions": true, "verbatimModuleSyntax": true,
     "erasableSyntaxOnly": true, "types": ["node"], "skipLibCheck": true
   },
-  "include": ["src/**/*.ts", "tests/**/*.ts", "scripts/**/*.ts"]
+  "include": ["api/**/*.ts", "src/**/*.ts", "tests/**/*.ts", "scripts/**/*.ts"]
 }

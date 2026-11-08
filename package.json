@@ -6,6 +6,7 @@
     "dev": "next dev",
     "dev:all": "node scripts/dev.mjs",
     "build": "next build",
+    "build:all": "npm run build && npm --prefix backend run build",
     "start": "next start",
     "lint": "eslint",
     "typecheck": "next typegen && tsc --noEmit",

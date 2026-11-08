@@ -1,4 +1,11 @@
 {
+  "backendUnavailable": {
+    "error": {
+      "code": "backend_unavailable",
+      "message": "Backend configuration or database unavailable; check environment and database setup",
+      "requestId": "00000000-0000-4000-8000-000000000000"
+    }
+  },
   "demoSession": {
     "developmentOnly": true,
     "sessionId": "00000001-0000-4000-8000-000000000000",
