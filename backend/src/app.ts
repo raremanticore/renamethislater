@@ -13,6 +13,7 @@ import { explain } from './explanations.ts';
 import { NessieBankingRepository, NessieError } from './nessie.ts';
 import { ANALYST_MAX_EVENTS, SecurityAnalyst } from './analyst.ts';
 import type { AnalysisResponse } from './contracts.ts';
+import type { Session } from './database.ts';
 
 class HttpError extends Error {
   status: number; code: string;
@@ -56,6 +57,13 @@ export function createApplication(config: Config, dependencies: { store?: Store;
   const analyst = new SecurityAnalyst(config, dependencies.analystFetch);
   const engine = new SecurityEngine(store, config);
   const clock = dependencies.now ?? Date.now;
+  const sessionPayload = async (session: Session): Promise<DemoSessionResponse> => ({
+    developmentOnly: true, sessionId: session.id, expiresAt: new Date(session.expiresAt).toISOString(),
+    user: { handle: session.handle, role: session.role },
+    accountIds: bank.accountIds ? await bank.accountIds(session.userId)
+      : store.db.prepare('SELECT id FROM accounts WHERE user_id=? ORDER BY id').all(session.userId).map(row => String(row.id)),
+    bankingSource,
+  });
   const server = createServer(async (req, res) => {
     const requestId = randomUUID(); // Ignore untrusted incoming request IDs.
     res.setHeader('X-Request-ID', requestId);
@@ -71,11 +79,28 @@ export function createApplication(config: Config, dependencies: { store?: Store;
       const url = new URL(req.url ?? '/', config.origin);
       const path = url.pathname;
       const session = readSession(store, req.headers.cookie, now);
-      if (req.method === 'POST' && (path === '/api/demo/session' || path.startsWith('/api/security/'))) {
+      const adminSession = readSession(store, req.headers.cookie, now, 'demo_admin_session');
+      if (req.method === 'POST' && (path.startsWith('/api/demo/') || path.startsWith('/api/security/'))) {
         if ((req.headers.origin && req.headers.origin !== config.origin) || req.headers['sec-fetch-site'] === 'cross-site')
           throw new HttpError(403, 'origin_denied', 'Use the configured application origin');
       }
       if (path === '/api/health' && req.method === 'GET') return json(res, 200, { status: 'ok', developmentOnly: true, bankingSource });
+      if (req.method === 'GET' && (path === '/api/demo/session' || path === '/api/demo/admin-session')) {
+        const current = path === '/api/demo/admin-session' ? adminSession ?? (session?.role === 'admin' ? session : undefined)
+          : session?.role === 'customer' ? session : undefined;
+        if (!current) return fail(401, 'authentication_required', 'A valid server session is required');
+        if (path === '/api/demo/admin-session' && current.role !== 'admin') return fail(403, 'admin_required', 'Demo administrator access required');
+        return json(res, 200, await sessionPayload(current));
+      }
+      if (path === '/api/demo/logout' && req.method === 'POST') {
+        const data = await body(req);
+        if (data.scope !== 'customer' && data.scope !== 'admin') return fail(400, 'invalid_scope', 'scope must be customer or admin');
+        const current = data.scope === 'admin' ? adminSession ?? (session?.role === 'admin' ? session : undefined) : session;
+        if (current && current.role === (data.scope === 'admin' ? 'admin' : 'customer')) store.db.prepare('DELETE FROM sessions WHERE id=?').run(current.id);
+        const names = data.scope === 'admin' ? ['demo_admin_session', ...(session?.role === 'admin' ? ['demo_session'] : [])] : ['demo_session'];
+        res.setHeader('Set-Cookie', names.map(name => `${name}=; HttpOnly; SameSite=Strict; Path=/; Max-Age=0${config.origin.startsWith('https:') ? '; Secure' : ''}`));
+        return json(res, 200, { developmentOnly: true, signedOut: true, scope: data.scope });
+      }
       if (path === '/api/demo/session' && req.method === 'POST') {
         const data = await body(req);
         if (data.handle !== 'alice' && data.handle !== 'bob' && data.handle !== 'admin')
@@ -84,18 +109,12 @@ export function createApplication(config: Config, dependencies: { store?: Store;
           throw new HttpError(403, 'admin_denied', 'Demo administrator credentials required');
         const result = createSession(store, data.handle, now, config)!;
         res.setHeader('Set-Cookie', result.cookie);
-        const response: DemoSessionResponse = { developmentOnly: true, sessionId: result.session.id,
-          expiresAt: new Date(result.session.expiresAt).toISOString(),
-          user: { handle: result.session.handle, role: result.session.role },
-          accountIds: bank.accountIds ? await bank.accountIds(result.session.userId)
-            : store.db.prepare('SELECT id FROM accounts WHERE user_id=? ORDER BY id').all(result.session.userId).map(row => String(row.id)),
-          bankingSource,
-        };
-        return json(res, 201, response);
+        return json(res, 201, await sessionPayload(result.session));
       }
       if (path.startsWith('/api/security/')) {
-        if (!session) return fail(401, 'authentication_required', 'A valid server session is required');
-        if (session.role !== 'admin') return fail(403, 'admin_required', 'Demo administrator access required');
+        const administrator = adminSession ?? session; // Accept legacy admin sessions without making customer cookies administrative.
+        if (!administrator) return fail(401, 'authentication_required', 'A valid server session is required');
+        if (administrator.role !== 'admin') return fail(403, 'admin_required', 'Demo administrator access required');
         const analysisRoute = /^\/api\/security\/sessions\/([a-f0-9-]{36})\/analysis$/.exec(path);
         if (analysisRoute && req.method === 'POST') {
           await body(req); // No client events/prompts are accepted; enforce the normal JSON/body cap.

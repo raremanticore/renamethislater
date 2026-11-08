@@ -1,6 +1,6 @@
 # Banking security backend API v1
 
-The existing backend is an independent TypeScript package in `backend/`; it needs Node **24.11+** and uses Node's HTTP server, native TypeScript execution, and built-in SQLite. SQLite currently prints Node's experimental-feature warning. There are no production npm dependencies. Its purpose is detecting suspicious collection of banking data after login. It does not detect fraudulent transactions, identify every AI agent, or claim to prevent all DDoS attacks. This extension adds a selectable Nessie sandbox adapter and an advisory AI analyst. No dashboard, styling, root/shared configuration, deployment, or changes to `main` are included; work is on `arham`.
+The backend is an independent TypeScript package in `backend/`; it needs Node **24.11+** and uses Node's HTTP server, native TypeScript execution, and built-in SQLite. SQLite currently prints Node's experimental-feature warning. There are no backend production npm dependencies. Its purpose is detecting suspicious collection of banking data after login. It does not detect fraudulent transactions, identify every AI agent, or claim to prevent all DDoS attacks. The existing Nessie sandbox adapter and advisory analyst are now connected to the Next.js banking/security frontend on the isolated `test` branch. See [connected-demo.md](connected-demo.md) to start both apps; no changes to `main` or deployment are included.
 
 ## Run locally
 
@@ -119,7 +119,7 @@ After seeding, `npm run nessie:smoke -- --live --user alice --account acc-alice-
 
 ## Authentication and dashboard integration
 
-All session identity comes from an opaque `demo_session` cookie. The database stores only its SHA-256 digest, plus a separate nonsecret UUID session ID for dashboard correlation. Cookies are HttpOnly, SameSite=Strict, Path=/, expire after eight hours, and gain Secure when `APP_ORIGIN` uses HTTPS. Nonsecret session IDs are never accepted as bearer credentials. Client `userId`, role, request-ID headers, user-agent strings, and mouse behavior cannot authorize banking requests.
+Customer identity comes from the opaque `demo_session` cookie; administrator login sets a separate `demo_admin_session` cookie. This lets the banking page and security dashboard run side by side without replacing each other's identity. The database stores token SHA-256 digests, plus separate nonsecret UUID session IDs for dashboard correlation. Cookies are HttpOnly, SameSite=Strict, Path=/, expire after eight hours, and gain Secure when `APP_ORIGIN` uses HTTPS. Nonsecret session IDs are never accepted as bearer credentials. Client `userId`, role, request-ID headers, user-agent strings, and mouse behavior cannot authorize banking requests. A customer token placed under the administrator cookie name still fails the server's role check. Legacy administrator sessions in `demo_session` remain accepted for security endpoints.
 
 **Development-only login**: `POST /api/demo/session`, `Content-Type: application/json`.
 
@@ -128,6 +128,8 @@ All session identity comes from an opaque `demo_session` cookie. The database st
 ```
 
 Customer handles: `alice`, `bob`. Administrator login: `{ "handle": "admin", "adminKey": "<your DEMO_ADMIN_KEY>" }`. Do not bundle the admin key into frontend code, store it in browser storage, or supply a default key. A demo operator enters it explicitly for local login. A customer supplying an admin role or user ID cannot gain admin access.
+
+Additive frontend session routes: `GET /api/demo/session` restores a customer session, and `GET /api/demo/admin-session` restores an administrator session, returning the existing `DemoSessionResponse` shape without retrieving protected banking payloads. Missing/expired sessions return 401; a customer token used as an admin session returns 403. `POST /api/demo/logout` with JSON `{ "scope": "customer" }` or `{ "scope": "admin" }` revokes only that server session and clears its cookie. It returns `{ "developmentOnly": true, "signedOut": true, "scope": "customer" | "admin" }`. Invalid scope is 400; all demo mutations are subject to the same origin check as login.
 
 Example 201 response (also sets the cookie):
 
@@ -143,7 +145,7 @@ Example 201 response (also sets the cookie):
 
 In local mode Bob owns `acc-bob-checking`; in Nessie mode ownership comes only from the server mapping above. The administrator has no banking accounts and has no ownership bypass. Alice/Bob are fictional logins anyone can select in demo mode; they are **not production authentication**, including in Nessie mode. Use only your own synthetic sandbox accounts. Fresh demo logins create new session state, so this system is intentionally not resistant to session farming. Production authentication, distributed coordination, and upstream abuse protection remain future work.
 
-The dashboard should use relative `/api/...` URLs and cookies. Serve/proxy the API and dashboard through the same origin and set `APP_ORIGIN` to that exact browser origin. For a dashboard at `http://localhost:3000`, set that as `APP_ORIGIN` and proxy `/api` to `http://127.0.0.1:3001`. No frontend proxy configuration is changed here. Cross-origin POST requests and browser `Sec-Fetch-Site: cross-site` mutations receive 403; no CORS access is enabled. JSON request bodies are capped at 4096 bytes where parsed. CLI clients may omit Origin. Health endpoint: `GET /api/health` returns `{ "status": "ok", "developmentOnly": true, "bankingSource": "local" }` (or `nessie`). This reports configured source, not upstream availability, and performs no Nessie probe.
+The connected frontend uses relative `/api/...` URLs and cookies through `next.config.ts` rewrites. `npm run dev:all` from the repository root sets the backend's exact `APP_ORIGIN` to `http://localhost:3000` and proxies `/api` to `http://127.0.0.1:3001` without copying provider credentials to the frontend. For separate startup commands, set the origin yourself as described in [connected-demo.md](connected-demo.md). Cross-origin POST requests and browser `Sec-Fetch-Site: cross-site` mutations receive 403; no CORS access is enabled. JSON request bodies are capped at 4096 bytes where parsed. CLI clients may omit Origin. Health endpoint: `GET /api/health` returns `{ "status": "ok", "developmentOnly": true, "bankingSource": "local" }` (or `nessie`). This reports configured source, not upstream availability, and performs no Nessie probe.
 
 Type-only integration:
 
@@ -312,7 +314,7 @@ Response shape (`AnalysisResponse`):
 
 `assessment` is `normal`, `suspicious`, or `uncertain`; it is always advisory. `source` distinguishes model interpretation from the deterministic fallback. Fallback includes `fallbackReason`: `not_configured`, `no_events`, `provider_failed`, `invalid_response`, or `busy`. The deterministic fallback marks positive-score rule signals/ownership denials as suspicious, three or more allowed signal-free events as normal, and sparse/ambiguous samples as uncertain. Neither source proves AI identity, transaction fraud, or malicious intent. `normal` does not guarantee safety, particularly with protection off or a small sample.
 
-**Dashboard integration steps (no frontend changes included):**
+**Dashboard integration (implemented on `test`; behavior for future maintenance):**
 
 1. Keep displaying the existing timeline, current rule risk, and decision from `GET /api/security/sessions/:id`.
 2. Add an explicit "Analyze recent activity" action calling the new POST with `{}`, same-origin credentials, and the admin cookie. For example:
@@ -349,6 +351,6 @@ Success reports `source: "model"`, the advisory assessment/explanation, validate
 
 ## Files and remaining work
 
-Implementation is confined to `backend/` and `docs/`. The root README and dashboard files are unchanged. No shared configuration changes were necessary. This extension is on `arham`; no merge, deployment, pull request, or secret commit is performed.
+The original backend lives in `backend/` and `docs/`. Frontend integration is isolated on `test`, where the fetched frontend was merged and its existing components were connected. Shared proxy/type-check/development configuration changes are documented in [connected-demo.md](connected-demo.md). The root README is unchanged. No merge into `main`, deployment, pull request, push, or secret commit is performed.
 
-Remaining work: teammate's dashboard source/error/advisory displays and same-origin development proxy; real authentication before any real banking deployment; broader documented transaction feeds and production storage/rate limiting/operations. The user subsequently verified the own-sandbox Nessie smoke with one account and 30 deposit/withdrawal records, and the structured AI analyst passed the live verification above. Automated regression tests continue using cached fictional sandbox-format fixtures and mocked AI responses; no live provider calls are made by `npm test` or example generation.
+The banking UI, dashboard source/error/advisory displays, same-origin proxy, customer/admin login, charts, and demo controls are connected on `test`. Remaining future work includes the actual browser collector agent, real authentication before any real banking deployment, broader documented transaction feeds, and production operations. The user previously verified the own-sandbox Nessie smoke with one account and 30 deposit/withdrawal records, and the structured analyst passed the live verification above. Automated regression/browser tests continue using local fictional fixtures and mocked or disabled AI responses; no live provider calls are made by test suites or example generation.

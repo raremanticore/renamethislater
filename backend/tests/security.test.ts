@@ -271,3 +271,33 @@ test('demo startup and configuration fail closed outside explicit development mo
   assert.throws(() => loadConfig({ SECURITY_THROTTLE_SCORE: '100' }), /thresholds/);
   assert.throws(() => loadConfig({ DEMO_ADMIN_KEY: 'short' }), /24/);
 });
+
+test('customer and administrator cookies restore independently; logout revokes only the selected scope', async t => {
+  const app = await setup(t);
+  const alice = await app.login('alice'); const admin = await app.login('admin');
+  assert.match(alice.cookie, /^demo_session=/); assert.match(admin.cookie, /^demo_admin_session=/);
+  const cookies = `${alice.cookie}; ${admin.cookie}`;
+  assert.equal((await (await app.request('/api/demo/session', cookies)).json()).sessionId, alice.body.sessionId);
+  assert.equal((await (await app.request('/api/demo/admin-session', cookies)).json()).sessionId, admin.body.sessionId);
+  assert.equal((await app.request('/api/security/overview', cookies)).status, 200);
+  assert.equal((await app.request('/api/demo/logout', cookies, { scope: 'admin' }, { Origin: 'https://evil.example' })).status, 403);
+  assert.equal((await app.request('/api/demo/logout', cookies, { scope: 'admin' })).status, 200);
+  assert.equal((await app.request('/api/security/overview', cookies)).status, 403);
+  assert.equal((await app.request('/api/demo/admin-session', cookies)).status, 401);
+  assert.equal((await app.request(account, cookies)).status, 200);
+  const newAdmin = await app.login('admin');
+  const nextCookies = `${alice.cookie}; ${newAdmin.cookie}`;
+  assert.equal((await app.request('/api/demo/logout', nextCookies, { scope: 'customer' })).status, 200);
+  assert.equal((await app.request(account, nextCookies)).status, 401);
+  assert.equal((await app.request('/api/security/overview', nextCookies)).status, 200);
+});
+
+test('a customer token in an admin cookie grants no administrator access; legacy admin cookies remain accepted', async t => {
+  const app = await setup(t);
+  const alice = await app.login('alice'); const admin = await app.login('admin');
+  const forged = alice.cookie.replace('demo_session=', 'demo_admin_session=');
+  assert.equal((await app.request('/api/security/events', forged)).status, 403);
+  assert.equal((await app.request('/api/demo/admin-session', forged)).status, 403);
+  assert.equal((await app.request('/api/security/events', admin.cookie.replace('demo_admin_session=', 'demo_session='))).status, 200);
+  assert.equal((await app.request('/api/demo/logout', alice.cookie, { scope: 'anything' })).status, 400);
+});
