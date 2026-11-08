@@ -1,9 +1,5 @@
-import SecurityDashboard from "@/components/dashboard/SecurityDashboard";
+import Banking from "@/components/banking/Banking";
 
 export default function Home() {
-  return (
-    <main>
-      <SecurityDashboard />
-    </main>
-  );
+  return <Banking />;
 }
