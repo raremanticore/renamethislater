@@ -1,0 +1,14 @@
+{
+  "fixtureSource": "Offline fictional sandbox-format examples based on the official Nessie docs checked 2026-11-08; not a recording of a live customer account.",
+  "account": {
+    "_id": "aaaaaaaaaaaaaaaaaaaaaaaa", "type": "Checking", "nickname": "Our sandbox checking",
+    "rewards": 100, "balance": 5000, "account_number": "0000000000000000", "customer_id": "cccccccccccccccccccccccc"
+  },
+  "deposits": [
+    { "_id": "dddddddddddddddddddddddd", "medium": "balance", "transaction_date": "2026-11-01", "status": "completed", "amount": 500, "description": "Fictional payroll" },
+    { "_id": "eeeeeeeeeeeeeeeeeeeeeeee", "medium": "balance", "transaction_date": "2026-11-02", "status": "pending", "amount": 0.29, "description": "Fictional refund" }
+  ],
+  "withdrawals": [
+    { "_id": "ffffffffffffffffffffffff", "medium": "balance", "transaction_date": "2026-11-03", "status": "completed", "amount": 20.15, "description": "Fictional ATM withdrawal" }
+  ]
+}
