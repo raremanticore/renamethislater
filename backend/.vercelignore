@@ -1,3 +1,5 @@
 .env*
 data/
 coverage/
+.build/
+.emit-test-*/

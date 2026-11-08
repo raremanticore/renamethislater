@@ -37,6 +37,8 @@ No SQLite history is automatically copied to Supabase. Nessie account ownership 
 
 `backend/vercel.json` routes `/api/:path*` into the single Node function `api/index.ts`. Its static output directory is explicitly `public`, containing only a small backend landing page. This directory is tracked so the Other preset's static-output check succeeds; never set output to the backend source directory. Vercel compiles the TypeScript function; the build command checks backend TypeScript, including tests. No listener, local disk, seed, migration or provider call runs during the build. Vercel owns the HTTP listener.
 
+`rewriteRelativeImportExtensions: true` in the backend TypeScript configuration changes relative `.ts` imports to `.js` in emitted code. This is required for Vercel's compiled ESM functions; local development still runs the original `.ts` files. `tsconfig.build.json` supports an isolated emit check, and the runtime regression test loads the emitted API and certificate without a database/model call. If runtime logs mention `ERR_MODULE_NOT_FOUND` for a `.ts` path, deploy the updated configuration rather than changing database credentials.
+
 Add these variables in **this project's Vercel environment settings** (a local .env is not uploaded):
 
 ```dotenv
