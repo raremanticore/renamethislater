@@ -6,6 +6,7 @@ import Link from "next/link";
 import DemoLogin from '@/components/DemoLogin';
 import { api, ApiError, downloadCsv, errorMessage, money, post, timestamp } from '@/lib/api';
 import type { Account, DemoSessionResponse, Transaction } from '@/backend/src/contracts';
+import Image from "next/image";
 
 /**
  * Banking Dashboard
@@ -89,15 +90,17 @@ export default function BankingDashboard() {
                 {/* Logo and Brand Name */}
             <Link href="/" className="flex items-center gap-3">
 
-              <img
-                src="/public/ghost.svg"
-                alt="Company Logo"
-                width="{40}"
-                height="{40}"
-              />
+              <div className="bg-white rounded-full p-2 flex items-center justify-center">
+              <Image
+                src="/ghost.svg"
+                alt="Ghost Logo"
+                width={40}
+                height={40}
+               />
+            </div>
 
 
-              <span className="text-xl font-bold tracking-wide text-white">
+              <span className="text-xl font-mono tracking-wide text-white">
                 veyl
               </span>
 
