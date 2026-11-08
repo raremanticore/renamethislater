@@ -33,9 +33,9 @@ No SQLite history is automatically copied to Supabase. Nessie account ownership 
 | Node.js | **24.x** |
 | Install command | `npm ci` |
 | Build command | `npm run build` |
-| Output directory | Leave unset/default |
+| Output directory | `public` (set in `backend/vercel.json`) |
 
-`backend/vercel.json` routes `/api/:path*` into the single Node function `api/index.ts`. Vercel compiles the TypeScript function; the build command checks backend TypeScript, including tests. No listener, local disk, seed, migration or provider call runs during the build. Vercel owns the HTTP listener.
+`backend/vercel.json` routes `/api/:path*` into the single Node function `api/index.ts`. Its static output directory is explicitly `public`, containing only a small backend landing page. This directory is tracked so the Other preset's static-output check succeeds; never set output to the backend source directory. Vercel compiles the TypeScript function; the build command checks backend TypeScript, including tests. No listener, local disk, seed, migration or provider call runs during the build. Vercel owns the HTTP listener.
 
 Add these variables in **this project's Vercel environment settings** (a local .env is not uploaded):
 
