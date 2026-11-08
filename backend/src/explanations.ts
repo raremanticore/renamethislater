@@ -6,7 +6,9 @@ export function requestOpenAI(config: Config, payload: Record<string, unknown>, 
   return send('https://api.openai.com/v1/responses', {
     method: 'POST', redirect: 'error', signal: AbortSignal.timeout(timeoutMs),
     headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${config.openaiKey}` },
-    body: JSON.stringify({ ...payload, model: config.explanationModel, store: false }),
+    // Short bounded advisory outputs do not need Luna's default medium reasoning budget.
+    body: JSON.stringify({ ...payload, ...(config.explanationModel === 'gpt-6-luna' ? { reasoning: { effort: 'none' } } : {}),
+      model: config.explanationModel, store: false }),
   });
 }
 

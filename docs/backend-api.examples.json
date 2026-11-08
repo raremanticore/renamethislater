@@ -10,7 +10,8 @@
     "accountIds": [
       "acc-alice-checking",
       "acc-alice-savings"
-    ]
+    ],
+    "bankingSource": "local"
   },
   "bankAccount": {
     "account": {
@@ -256,7 +257,14 @@
         "reasons": [
           "4 unauthorized resource attempts in the risk window"
         ],
-        "protectionEnabled": true
+        "protectionEnabled": true,
+        "enforcement": {
+          "cause": "score_threshold",
+          "threshold": 90,
+          "contributingRuleIds": [
+            "unauthorized_resources"
+          ]
+        }
       },
       {
         "requestId": "00000003-0000-4000-8000-000000000000",
@@ -279,7 +287,12 @@
           "Account ownership denied",
           "4 unauthorized resource attempts in the risk window"
         ],
-        "protectionEnabled": true
+        "protectionEnabled": true,
+        "enforcement": {
+          "cause": "authorization",
+          "threshold": null,
+          "contributingRuleIds": []
+        }
       }
     ],
     "pagination": {
@@ -336,7 +349,14 @@
         "reasons": [
           "4 unauthorized resource attempts in the risk window"
         ],
-        "protectionEnabled": true
+        "protectionEnabled": true,
+        "enforcement": {
+          "cause": "score_threshold",
+          "threshold": 90,
+          "contributingRuleIds": [
+            "unauthorized_resources"
+          ]
+        }
       },
       {
         "requestId": "00000003-0000-4000-8000-000000000000",
@@ -359,7 +379,12 @@
           "Account ownership denied",
           "4 unauthorized resource attempts in the risk window"
         ],
-        "protectionEnabled": true
+        "protectionEnabled": true,
+        "enforcement": {
+          "cause": "authorization",
+          "threshold": null,
+          "contributingRuleIds": []
+        }
       }
     ],
     "timelinePagination": {
@@ -371,6 +396,124 @@
       "source": "deterministic",
       "text": "2 recorded events in this page. Peak internal rule score: 100. Rules: unauthorized_resources. Scores describe observed behavior and do not identify AI or prove malicious intent."
     }
+  },
+  "securityAnalysis": {
+    "apiVersion": "1",
+    "sessionId": "00000001-0000-4000-8000-000000000000",
+    "generatedAt": "2026-11-07T12:01:45.000Z",
+    "sample": {
+      "eventCount": 8,
+      "maxEvents": 50,
+      "windowMs": 300000,
+      "firstEventAt": "2026-11-07T12:00:00.000Z",
+      "lastEventAt": "2026-11-07T12:01:45.000Z"
+    },
+    "enforcement": {
+      "currentDecision": "block",
+      "currentRiskScore": 100,
+      "protection": {
+        "enabled": true,
+        "windowMs": 300000,
+        "burstWindowMs": 2000,
+        "burstLimit": 8,
+        "throttleScore": 55,
+        "blockScore": 90,
+        "scoreMeaning": "internal_rule_score"
+      },
+      "blockedRequests": [
+        {
+          "requestId": "00000002-0000-4000-8000-000000000000",
+          "triggeredRules": [
+            {
+              "id": "unauthorized_resources",
+              "count": 4,
+              "score": 100,
+              "reason": "4 unauthorized resource attempts in the risk window"
+            }
+          ],
+          "reasons": [
+            "4 unauthorized resource attempts in the risk window"
+          ],
+          "riskScore": 100,
+          "basis": {
+            "cause": "score_threshold",
+            "threshold": 90,
+            "contributingRuleIds": [
+              "unauthorized_resources"
+            ]
+          }
+        }
+      ]
+    },
+    "analysis": {
+      "source": "deterministic",
+      "assessment": "suspicious",
+      "advisoryOnly": true,
+      "fallbackReason": "not_configured",
+      "explanation": "Recorded ownership denials or collection-related rule signals warrant review. This is a deterministic advisory, not a finding of fraud or AI identity.",
+      "supportingRequestIds": [
+        "00000002-0000-4000-8000-000000000000",
+        "00000003-0000-4000-8000-000000000000",
+        "00000004-0000-4000-8000-000000000000",
+        "00000005-0000-4000-8000-000000000000",
+        "00000006-0000-4000-8000-000000000000"
+      ]
+    }
+  },
+  "mockedModelAnalysis": {
+    "source": "model",
+    "advisoryOnly": true,
+    "assessment": "suspicious",
+    "explanation": "Repeated denied account access indicates suspicious collection behavior in this bounded sample.",
+    "supportingRequestIds": [
+      "00000002-0000-4000-8000-000000000000"
+    ]
+  },
+  "mockedNessieExample": {
+    "transport": "mocked",
+    "liveTested": false,
+    "bankingSource": "nessie",
+    "account": {
+      "id": "acc-alice-checking",
+      "name": "Our sandbox checking",
+      "currency": "USD",
+      "balanceCents": 500000
+    },
+    "transactions": [
+      {
+        "id": "nessie-deposit-dddddddddddddddddddddddd",
+        "accountId": "acc-alice-checking",
+        "postedAt": "2026-11-01T00:00:00.000Z",
+        "description": "Nessie deposit (completed): Fictional payroll",
+        "amountCents": 50000
+      },
+      {
+        "id": "nessie-deposit-eeeeeeeeeeeeeeeeeeeeeeee",
+        "accountId": "acc-alice-checking",
+        "postedAt": "2026-11-02T00:00:00.000Z",
+        "description": "Nessie deposit (pending): Fictional refund",
+        "amountCents": 29
+      },
+      {
+        "id": "nessie-withdrawal-ffffffffffffffffffffffff",
+        "accountId": "acc-alice-checking",
+        "postedAt": "2026-11-03T00:00:00.000Z",
+        "description": "Nessie withdrawal (completed): Fictional ATM withdrawal",
+        "amountCents": -2015
+      }
+    ],
+    "providerError": {
+      "error": {
+        "code": "nessie_auth_failed",
+        "message": "Nessie rejected server credentials; check the sandbox key and permissions",
+        "requestId": "00000007-0000-4000-8000-000000000000"
+      }
+    }
+  },
+  "exampleMetadata": {
+    "modelAnalysisWasMocked": true,
+    "bankingSource": "local",
+    "realProviderCalls": 0
   },
   "protectionOff": {
     "apiVersion": "1",
