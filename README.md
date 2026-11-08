@@ -114,6 +114,10 @@ This creates separate demo sessions and demonstrates normal reads, a request bur
 
 This is **scripted automation, not a real AI attacker/agent test**. It is restricted to the local application, at most 30 requests and 20 seconds, and refuses Nessie-backed data. Reset demo activity before a repeat demonstration.
 
+## Optional: Browser Use AI collector
+
+For an isolated fixture-only site, run `npm run demo:site` instead of `dev:all`. The separate `npm run demo:agent -- --live` runner uses Browser Use and your OpenAI key to attempt repeated exports through a visible browser. `--scripted` is the clearly labeled no-AI rehearsal/fallback. See [agents/README.md](agents/README.md) for installation, limits, recording steps, and the distinction from the security analyst.
+
 ## Optional: use your Nessie sandbox
 
 The default fixtures work without Nessie. To show your own existing sandbox data, change these values in `backend/.env`:
@@ -220,7 +224,7 @@ Then use `http://localhost:3020` and `http://localhost:3020/security`. The launc
 
 ## Scope and documentation
 
-Veyl demonstrates suspicious data-collection detection after fictional login. It does **not** detect fraudulent transactions, identify every AI agent, prevent all DDoS attacks, or provide production banking authentication. A real browser-driven attacker agent is not included.
+Veyl demonstrates suspicious data-collection detection after fictional login. It does **not** detect fraudulent transactions, identify every AI agent, prevent all DDoS attacks, or provide production banking authentication. The optional Browser Use collector is a bounded simulation against our own local fictional-data site.
 
 - [Backend API, response contracts, and provider setup](docs/backend-api.md)
 - [Example API responses](docs/backend-api.examples.json)

@@ -5,6 +5,8 @@
   "scripts": {
     "dev": "next dev",
     "dev:all": "node scripts/dev.mjs",
+    "demo:site": "node scripts/local-agent-site.mjs",
+    "demo:agent": "node scripts/browser-agent.mjs",
     "build": "next build",
     "build:all": "npm run build && npm --prefix backend run build",
     "start": "next start",

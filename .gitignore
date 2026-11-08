@@ -43,3 +43,8 @@ next-env.d.ts
 # Local browser checks
 /playwright-report/
 /test-results/
+
+# Local collector agent environment and fictional demo artifacts
+/agents/.venv/
+/agents/artifacts/
+/agents/__pycache__/
