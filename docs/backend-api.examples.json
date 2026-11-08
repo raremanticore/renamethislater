@@ -1,0 +1,400 @@
+{
+  "demoSession": {
+    "developmentOnly": true,
+    "sessionId": "00000001-0000-4000-8000-000000000000",
+    "expiresAt": "2026-11-07T20:00:00.000Z",
+    "user": {
+      "handle": "alice",
+      "role": "customer"
+    },
+    "accountIds": [
+      "acc-alice-checking",
+      "acc-alice-savings"
+    ]
+  },
+  "bankAccount": {
+    "account": {
+      "id": "acc-alice-checking",
+      "name": "Demo checking",
+      "currency": "USD",
+      "balanceCents": 245000
+    }
+  },
+  "bankTransactions": {
+    "transactions": [
+      {
+        "id": "acc-alice-checking-tx-1",
+        "accountId": "acc-alice-checking",
+        "postedAt": "2026-10-01T12:00:00.000Z",
+        "description": "Fictional employer deposit",
+        "amountCents": 125000
+      },
+      {
+        "id": "acc-alice-checking-tx-2",
+        "accountId": "acc-alice-checking",
+        "postedAt": "2026-10-02T12:00:00.000Z",
+        "description": "Fictional grocery store",
+        "amountCents": -6450
+      },
+      {
+        "id": "acc-alice-checking-tx-3",
+        "accountId": "acc-alice-checking",
+        "postedAt": "2026-10-03T12:00:00.000Z",
+        "description": "Fictional cafe",
+        "amountCents": -575
+      }
+    ]
+  },
+  "bankExportCsv": "id,accountId,postedAt,description,amountCents\r\n\"acc-alice-checking-tx-1\",\"acc-alice-checking\",\"2026-10-01T12:00:00.000Z\",\"Fictional employer deposit\",\"125000\"\r\n\"acc-alice-checking-tx-2\",\"acc-alice-checking\",\"2026-10-02T12:00:00.000Z\",\"Fictional grocery store\",\"-6450\"\r\n\"acc-alice-checking-tx-3\",\"acc-alice-checking\",\"2026-10-03T12:00:00.000Z\",\"Fictional cafe\",\"-575\"\r\n",
+  "blockedError": {
+    "error": {
+      "code": "security_blocked",
+      "message": "Request blocked by behavioral rules",
+      "requestId": "00000002-0000-4000-8000-000000000000"
+    }
+  },
+  "securityOverview": {
+    "apiVersion": "1",
+    "generatedAt": "2026-11-07T12:01:45.000Z",
+    "protection": {
+      "enabled": true,
+      "windowMs": 300000,
+      "burstWindowMs": 2000,
+      "burstLimit": 8,
+      "throttleScore": 55,
+      "blockScore": 90,
+      "scoreMeaning": "internal_rule_score"
+    },
+    "period": {
+      "start": "2026-11-07T11:47:00.000Z",
+      "end": "2026-11-07T12:02:00.000Z",
+      "bucketMs": 60000
+    },
+    "totals": {
+      "total": 8,
+      "allow": 3,
+      "deny": 4,
+      "throttle": 0,
+      "block": 1
+    },
+    "buckets": [
+      {
+        "start": "2026-11-07T11:47:00.000Z",
+        "end": "2026-11-07T11:48:00.000Z",
+        "total": 0,
+        "allow": 0,
+        "deny": 0,
+        "throttle": 0,
+        "block": 0
+      },
+      {
+        "start": "2026-11-07T11:48:00.000Z",
+        "end": "2026-11-07T11:49:00.000Z",
+        "total": 0,
+        "allow": 0,
+        "deny": 0,
+        "throttle": 0,
+        "block": 0
+      },
+      {
+        "start": "2026-11-07T11:49:00.000Z",
+        "end": "2026-11-07T11:50:00.000Z",
+        "total": 0,
+        "allow": 0,
+        "deny": 0,
+        "throttle": 0,
+        "block": 0
+      },
+      {
+        "start": "2026-11-07T11:50:00.000Z",
+        "end": "2026-11-07T11:51:00.000Z",
+        "total": 0,
+        "allow": 0,
+        "deny": 0,
+        "throttle": 0,
+        "block": 0
+      },
+      {
+        "start": "2026-11-07T11:51:00.000Z",
+        "end": "2026-11-07T11:52:00.000Z",
+        "total": 0,
+        "allow": 0,
+        "deny": 0,
+        "throttle": 0,
+        "block": 0
+      },
+      {
+        "start": "2026-11-07T11:52:00.000Z",
+        "end": "2026-11-07T11:53:00.000Z",
+        "total": 0,
+        "allow": 0,
+        "deny": 0,
+        "throttle": 0,
+        "block": 0
+      },
+      {
+        "start": "2026-11-07T11:53:00.000Z",
+        "end": "2026-11-07T11:54:00.000Z",
+        "total": 0,
+        "allow": 0,
+        "deny": 0,
+        "throttle": 0,
+        "block": 0
+      },
+      {
+        "start": "2026-11-07T11:54:00.000Z",
+        "end": "2026-11-07T11:55:00.000Z",
+        "total": 0,
+        "allow": 0,
+        "deny": 0,
+        "throttle": 0,
+        "block": 0
+      },
+      {
+        "start": "2026-11-07T11:55:00.000Z",
+        "end": "2026-11-07T11:56:00.000Z",
+        "total": 0,
+        "allow": 0,
+        "deny": 0,
+        "throttle": 0,
+        "block": 0
+      },
+      {
+        "start": "2026-11-07T11:56:00.000Z",
+        "end": "2026-11-07T11:57:00.000Z",
+        "total": 0,
+        "allow": 0,
+        "deny": 0,
+        "throttle": 0,
+        "block": 0
+      },
+      {
+        "start": "2026-11-07T11:57:00.000Z",
+        "end": "2026-11-07T11:58:00.000Z",
+        "total": 0,
+        "allow": 0,
+        "deny": 0,
+        "throttle": 0,
+        "block": 0
+      },
+      {
+        "start": "2026-11-07T11:58:00.000Z",
+        "end": "2026-11-07T11:59:00.000Z",
+        "total": 0,
+        "allow": 0,
+        "deny": 0,
+        "throttle": 0,
+        "block": 0
+      },
+      {
+        "start": "2026-11-07T11:59:00.000Z",
+        "end": "2026-11-07T12:00:00.000Z",
+        "total": 0,
+        "allow": 0,
+        "deny": 0,
+        "throttle": 0,
+        "block": 0
+      },
+      {
+        "start": "2026-11-07T12:00:00.000Z",
+        "end": "2026-11-07T12:01:00.000Z",
+        "total": 4,
+        "allow": 3,
+        "deny": 1,
+        "throttle": 0,
+        "block": 0
+      },
+      {
+        "start": "2026-11-07T12:01:00.000Z",
+        "end": "2026-11-07T12:02:00.000Z",
+        "total": 4,
+        "allow": 0,
+        "deny": 3,
+        "throttle": 0,
+        "block": 1
+      }
+    ],
+    "sessions": [
+      {
+        "sessionId": "00000001-0000-4000-8000-000000000000",
+        "firstSeen": "2026-11-07T12:00:00.000Z",
+        "lastSeen": "2026-11-07T12:01:45.000Z",
+        "riskScore": 100,
+        "triggeredRules": [
+          {
+            "id": "unauthorized_resources",
+            "count": 4,
+            "score": 100,
+            "reason": "4 unauthorized resource attempts in the risk window"
+          }
+        ],
+        "decision": "block",
+        "eventCount": 8
+      }
+    ]
+  },
+  "securityEvents": {
+    "apiVersion": "1",
+    "items": [
+      {
+        "requestId": "00000002-0000-4000-8000-000000000000",
+        "sessionId": "00000001-0000-4000-8000-000000000000",
+        "action": "account.read",
+        "targetResource": "/api/bank/accounts/:id#sha256:c11660c8295f08e5e3baafc6b66847bed6c85bf1797e6e4f4c6a477fdb4d778d",
+        "authorization": "allowed",
+        "timestamp": "2026-11-07T12:01:45.000Z",
+        "decision": "block",
+        "riskScore": 100,
+        "triggeredRules": [
+          {
+            "id": "unauthorized_resources",
+            "count": 4,
+            "score": 100,
+            "reason": "4 unauthorized resource attempts in the risk window"
+          }
+        ],
+        "reasons": [
+          "4 unauthorized resource attempts in the risk window"
+        ],
+        "protectionEnabled": true
+      },
+      {
+        "requestId": "00000003-0000-4000-8000-000000000000",
+        "sessionId": "00000001-0000-4000-8000-000000000000",
+        "action": "account.read",
+        "targetResource": "/api/bank/accounts/:id#sha256:70485edacdc832bb67f1b91c03146815ecf5009429b456dc49aa934226338174",
+        "authorization": "denied",
+        "timestamp": "2026-11-07T12:01:30.000Z",
+        "decision": "deny",
+        "riskScore": 100,
+        "triggeredRules": [
+          {
+            "id": "unauthorized_resources",
+            "count": 4,
+            "score": 100,
+            "reason": "4 unauthorized resource attempts in the risk window"
+          }
+        ],
+        "reasons": [
+          "Account ownership denied",
+          "4 unauthorized resource attempts in the risk window"
+        ],
+        "protectionEnabled": true
+      }
+    ],
+    "pagination": {
+      "limit": 2,
+      "hasMore": true,
+      "nextCursor": "7"
+    }
+  },
+  "securitySession": {
+    "apiVersion": "1",
+    "session": {
+      "sessionId": "00000001-0000-4000-8000-000000000000",
+      "firstSeen": "2026-11-07T12:00:00.000Z",
+      "lastSeen": "2026-11-07T12:01:45.000Z",
+      "riskScore": 100,
+      "triggeredRules": [
+        {
+          "id": "unauthorized_resources",
+          "count": 4,
+          "score": 100,
+          "reason": "4 unauthorized resource attempts in the risk window"
+        }
+      ],
+      "decision": "block",
+      "eventCount": 8
+    },
+    "protection": {
+      "enabled": true,
+      "windowMs": 300000,
+      "burstWindowMs": 2000,
+      "burstLimit": 8,
+      "throttleScore": 55,
+      "blockScore": 90,
+      "scoreMeaning": "internal_rule_score"
+    },
+    "timeline": [
+      {
+        "requestId": "00000002-0000-4000-8000-000000000000",
+        "sessionId": "00000001-0000-4000-8000-000000000000",
+        "action": "account.read",
+        "targetResource": "/api/bank/accounts/:id#sha256:c11660c8295f08e5e3baafc6b66847bed6c85bf1797e6e4f4c6a477fdb4d778d",
+        "authorization": "allowed",
+        "timestamp": "2026-11-07T12:01:45.000Z",
+        "decision": "block",
+        "riskScore": 100,
+        "triggeredRules": [
+          {
+            "id": "unauthorized_resources",
+            "count": 4,
+            "score": 100,
+            "reason": "4 unauthorized resource attempts in the risk window"
+          }
+        ],
+        "reasons": [
+          "4 unauthorized resource attempts in the risk window"
+        ],
+        "protectionEnabled": true
+      },
+      {
+        "requestId": "00000003-0000-4000-8000-000000000000",
+        "sessionId": "00000001-0000-4000-8000-000000000000",
+        "action": "account.read",
+        "targetResource": "/api/bank/accounts/:id#sha256:70485edacdc832bb67f1b91c03146815ecf5009429b456dc49aa934226338174",
+        "authorization": "denied",
+        "timestamp": "2026-11-07T12:01:30.000Z",
+        "decision": "deny",
+        "riskScore": 100,
+        "triggeredRules": [
+          {
+            "id": "unauthorized_resources",
+            "count": 4,
+            "score": 100,
+            "reason": "4 unauthorized resource attempts in the risk window"
+          }
+        ],
+        "reasons": [
+          "Account ownership denied",
+          "4 unauthorized resource attempts in the risk window"
+        ],
+        "protectionEnabled": true
+      }
+    ],
+    "timelinePagination": {
+      "limit": 2,
+      "hasMore": true,
+      "nextCursor": "7"
+    },
+    "explanation": {
+      "source": "deterministic",
+      "text": "2 recorded events in this page. Peak internal rule score: 100. Rules: unauthorized_resources. Scores describe observed behavior and do not identify AI or prove malicious intent."
+    }
+  },
+  "protectionOff": {
+    "apiVersion": "1",
+    "protection": {
+      "enabled": false,
+      "windowMs": 300000,
+      "burstWindowMs": 2000,
+      "burstLimit": 8,
+      "throttleScore": 55,
+      "blockScore": 90,
+      "scoreMeaning": "internal_rule_score"
+    }
+  },
+  "reset": {
+    "apiVersion": "1",
+    "resetAt": "2026-11-07T12:01:45.000Z",
+    "protection": {
+      "enabled": true,
+      "windowMs": 300000,
+      "burstWindowMs": 2000,
+      "burstLimit": 8,
+      "throttleScore": 55,
+      "blockScore": 90,
+      "scoreMeaning": "internal_rule_score"
+    }
+  }
+}
