@@ -9,44 +9,48 @@
 
 export default function LiveActivityTable() {
   return (
-    <table>
-    <tbody>
-        <tr className="column-headers">
-        <th>Time</th>
-        <th>Session ID</th>
-        <th>Action</th>
-        <th>Status</th>
-        <th>Reason</th>
-        </tr>
-        <tr className="row-one">
-        <th>Row 1 Live Sync</th>
-        <th>Row 1 Live Sync</th>
-        <th>Row 1 Live Sync</th>
-        <th>Row 1 Live Sync</th>
-        <th>Row 1 Live Sync</th>
-        </tr>
-        <tr className="row-two">
-        <th>Row 2 Live Sync</th>
-        <th>Row 2 Live Sync</th>
-        <th>Row 2 Live Sync</th>
-        <th>Row 2 Live Sync</th>
-        <th>Row 2 Live Sync</th>
-        </tr>
-        <tr className="row-three">
-        <th>Row 3 Live Sync</th>
-        <th>Row 3 Live Sync</th>
-        <th>Row 3 Live Sync</th>
-        <th>Row 3 Live Sync</th>
-        <th>Row 3 Live Sync</th>
-        </tr>
-        <tr className="row-four">
-        <th>Row 4 Live Sync</th>
-        <th>Row 4 Live Sync</th>
-        <th>Row 4 Live Sync</th>
-        <th>Row 4 Live Sync</th>
-        <th>Row 4 Live Sync</th>
-        </tr>
-    </tbody>
-    </table>
+    <div className="relative flex flex-col w-full h-full overflow-scroll text-gray-700 bg-slate-900 border border-slate-800 rounded-xl p-6 shadow-lg">
+        <table className="w-full text-left table-auto min-w-max">
+        <thead>
+            <tr>
+            <th className="p-4 border-b border-slate-50 bg-slate-800">Time</th>
+            <th>Session ID</th>
+            <th>Action</th>
+            <th>Status</th>
+            <th>Reason</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr className="hover:bg-slate-600">
+            <th className="p-4 border-b border-slate-50 bg-slate-800" >Row 1 Live Sync</th>
+            <th className="p-4 border-b border-slate-50 bg-slate-800" >Row 1 Live Sync</th>
+            <th className="p-4 border-b border-slate-50 bg-slate-800" >Row 1 Live Sync</th>
+            <th className="p-4 border-b border-slate-50 bg-slate-800" >Row 1 Live Sync</th>
+            <th className="p-4 border-b border-slate-50 bg-slate-800" >Row 1 Live Sync</th>
+            </tr>
+            <tr className="hover:bg-slate-600">
+            <th className="p-4 border-b border-slate-50 bg-slate-800">Row 2 Live Sync</th>
+            <th className="p-4 border-b border-slate-50 bg-slate-800">Row 2 Live Sync</th>
+            <th className="p-4 border-b border-slate-50 bg-slate-800">Row 2 Live Sync</th>
+            <th className="p-4 border-b border-slate-50 bg-slate-800">Row 2 Live Sync</th>
+            <th className="p-4 border-b border-slate-50 bg-slate-800">Row 2 Live Sync</th>
+            </tr>
+            <tr className="hover:bg-slate-600">
+            <th className="p-4 border-b border-slate-50 bg-slate-800">Row 3 Live Sync</th>
+            <th className="p-4 border-b border-slate-50 bg-slate-800">Row 3 Live Sync</th>
+            <th className="p-4 border-b border-slate-50 bg-slate-800">Row 3 Live Sync</th>
+            <th className="p-4 border-b border-slate-50 bg-slate-800">Row 3 Live Sync</th>
+            <th className="p-4 border-b border-slate-50 bg-slate-800">Row 3 Live Sync</th>
+            </tr>
+            <tr className="hover:bg-slate-600">
+            <th className="p-4 border-b border-slate-50 bg-slate-800">Row 4 Live Sync</th>
+            <th className="p-4 border-b border-slate-50 bg-slate-800">Row 4 Live Sync</th>
+            <th className="p-4 border-b border-slate-50 bg-slate-800">Row 4 Live Sync</th>
+            <th className="p-4 border-b border-slate-50 bg-slate-800">Row 4 Live Sync</th>
+            <th className="p-4 border-b border-slate-50 bg-slate-800">Row 4 Live Sync</th>
+            </tr>
+        </tbody>
+        </table>
+    </div>
     );
 }
